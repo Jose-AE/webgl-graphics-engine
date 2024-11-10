@@ -1,9 +1,6 @@
-import { loadFile } from "../../utils/loadFile";
+import { loadFile } from "../loadFile";
 
-function createStaticVertexBuffer(
-  gl: WebGL2RenderingContext,
-  data: ArrayBuffer
-) {
+function createStaticVertexBuffer(gl: WebGL2RenderingContext, data: ArrayBuffer) {
   const buffer = gl.createBuffer(); // Allocate memory on the GPU by creating a new buffer object.
   if (!buffer) {
     console.error("Failed to allocate buffer");
@@ -115,21 +112,13 @@ export async function movementAndColor() {
   //#region BUFFER_CREATION
 
   const triangleVertBuffer = createStaticVertexBuffer(gl, triangleVertices);
-  const rgbTriangleColorBuffer = createStaticVertexBuffer(
-    gl,
-    rgbTriangleColors
-  );
-  const fireyTriangleColorBuffer = createStaticVertexBuffer(
-    gl,
-    fireyTriangleColors
-  );
+  const rgbTriangleColorBuffer = createStaticVertexBuffer(gl, rgbTriangleColors);
+  const fireyTriangleColorBuffer = createStaticVertexBuffer(gl, fireyTriangleColors);
 
   //#endregion
 
   //#region VERTEX_SHADER
-  const vertexShaderCode = await loadFile(
-    "./Tutorials/movement-and-colors/VertexShader.vert"
-  );
+  const vertexShaderCode = await loadFile("./Tutorials/movement-and-colors/VertexShader.vert");
 
   const vertexShader = gl.createShader(gl.VERTEX_SHADER); //create a vertex shader
   if (!vertexShader) throw new Error("Erorr creating vertex shader");
@@ -145,9 +134,7 @@ export async function movementAndColor() {
   //#endregion
 
   //#region FRAGMENT_SHADER
-  const fragmentShaderCode = await loadFile(
-    "./Tutorials/movement-and-colors/FragmentShader.frag"
-  );
+  const fragmentShaderCode = await loadFile("./Tutorials/movement-and-colors/FragmentShader.frag");
 
   const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER); //create a vertex shader
   if (!fragmentShader) throw new Error("Erorr creating fragment shader");
@@ -177,38 +164,19 @@ export async function movementAndColor() {
   }
 
   //get the index of the atribute "vertexPos" we defined on the vertex shader, if we had muitple atributes the first one would start on 0 then 1 etc
-  const vertexPositionAttributeIndex = gl.getAttribLocation(
-    triangleShaderProgram!,
-    "vertexPos"
-  );
+  const vertexPositionAttributeIndex = gl.getAttribLocation(triangleShaderProgram!, "vertexPos");
 
-  const vertexColorAttributeIndex = gl.getAttribLocation(
-    triangleShaderProgram!,
-    "vertexColor"
-  );
+  const vertexColorAttributeIndex = gl.getAttribLocation(triangleShaderProgram!, "vertexColor");
 
   //if negative means it did not found it
   if (vertexPositionAttributeIndex < 0 || vertexColorAttributeIndex < 0) {
     console.error("Filed to get atribute indexes ");
   }
 
-  const shapeLocationUniform = gl.getUniformLocation(
-    triangleShaderProgram!,
-    "shapeLocation"
-  );
-  const shapeSizeUniform = gl.getUniformLocation(
-    triangleShaderProgram!,
-    "shapeSize"
-  );
-  const canvasSizeUniform = gl.getUniformLocation(
-    triangleShaderProgram!,
-    "canvasSize"
-  );
-  if (
-    shapeLocationUniform === null ||
-    shapeSizeUniform === null ||
-    canvasSizeUniform === null
-  ) {
+  const shapeLocationUniform = gl.getUniformLocation(triangleShaderProgram!, "shapeLocation");
+  const shapeSizeUniform = gl.getUniformLocation(triangleShaderProgram!, "shapeSize");
+  const canvasSizeUniform = gl.getUniformLocation(triangleShaderProgram!, "canvasSize");
+  if (shapeLocationUniform === null || shapeSizeUniform === null || canvasSizeUniform === null) {
     console.error("Failed to get unfiorm locations");
     console.log(shapeLocationUniform);
     console.log(shapeSizeUniform);
