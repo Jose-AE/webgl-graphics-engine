@@ -1,4 +1,3 @@
-import { glMatrix, mat4, quat, vec3 } from "gl-matrix";
 import {
   create3dPosColorInterleavedVao,
   CUBE_TRIANGLES,
@@ -14,33 +13,31 @@ import {
   getContext,
   getUniformLocations,
 } from "./gl-utils";
+import { Matrix4x4 } from "../../classes/Matrix4x4";
+import { Vector3 } from "../../classes/Vector3";
 
 class Shape {
-  private matWorld = mat4.create();
-  private scaleVec = vec3.create();
-  private rotation = quat.create();
+  private matWorld = new Matrix4x4();
+  private scaleVec = new Vector3();
 
   constructor(
-    private pos: vec3,
+    private pos: Vector3,
     private scale: number,
-    private rotationAxis: vec3,
-    private rotationAngle: number,
+    private rotation: Vector3,
     public readonly vao: WebGLVertexArrayObject,
     public readonly numIndices: number
   ) {}
 
   draw(gl: WebGL2RenderingContext, matWorldUniform: WebGLUniformLocation) {
-    quat.setAxisAngle(this.rotation, this.rotationAxis, this.rotationAngle);
-    vec3.set(this.scaleVec, this.scale, this.scale, this.scale);
+    this.scaleVec = new Vector3(this.scale, this.scale, this.scale);
 
-    mat4.fromRotationTranslationScale(
-      this.matWorld,
+    this.matWorld = Matrix4x4.fromRotationTranslationScaleMatrix(
       /* rotation= */ this.rotation,
       /* position= */ this.pos,
       /* scale= */ this.scaleVec
     );
 
-    gl.uniformMatrix4fv(matWorldUniform, false, this.matWorld);
+    gl.uniformMatrix4fv(matWorldUniform, false, this.matWorld.values);
     gl.bindVertexArray(this.vao);
     gl.drawElements(gl.TRIANGLES, this.numIndices, gl.UNSIGNED_SHORT, 0);
     gl.bindVertexArray(null);
@@ -50,6 +47,11 @@ class Shape {
 export async function cube3d() {
   const canvas = document.querySelector("#glCanvas") as HTMLCanvasElement;
   const gl = getContext(canvas);
+  gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.CULL_FACE);
+  gl.cullFace(gl.BACK);
+  gl.frontFace(gl.CCW);
+  gl.viewport(0, 0, canvas.width, canvas.height);
 
   const cubeVertices = createStaticVertexBuffer(gl, CUBE_VERTICES);
   const cubeIndices = createStaticIndexBuffer(gl, CUBE_TRIANGLES);
@@ -77,23 +79,23 @@ export async function cube3d() {
 
   const tableVAO = create3dPosColorInterleavedVao(gl, tableVertices, tableIndices, posAttrib, colorAttrib);
 
-  const UP_VEC = vec3.fromValues(0, 1, 0);
-
   const shapes = [
-    new Shape(vec3.fromValues(0, 0, 0), 1, UP_VEC, 0, tableVAO, TABLE_TRIANGLES.length), // Ground
-    new Shape(vec3.fromValues(0, 0.4, 0), 0.4, UP_VEC, 0, cubeVAO, CUBE_TRIANGLES.length), // Center
-    new Shape(vec3.fromValues(1, 0.05, 1), 0.05, UP_VEC, glMatrix.toRadian(20), cubeVAO, CUBE_TRIANGLES.length),
-    new Shape(vec3.fromValues(1, 0.1, -1), 0.1, UP_VEC, glMatrix.toRadian(40), cubeVAO, CUBE_TRIANGLES.length),
-    new Shape(vec3.fromValues(-1, 0.15, 1), 0.15, UP_VEC, glMatrix.toRadian(60), cubeVAO, CUBE_TRIANGLES.length),
-    new Shape(vec3.fromValues(-1, 0.2, -1), 0.2, UP_VEC, glMatrix.toRadian(80), cubeVAO, CUBE_TRIANGLES.length),
+    new Shape(new Vector3(0, 0, 0), 1, new Vector3(0, 0, 0), tableVAO, TABLE_TRIANGLES.length), // Ground
+    //new Shape(new Vector3(0, 0, 0), 0.4, new Vector3(0, 45, 0), cubeVAO, CUBE_TRIANGLES.length), // Center
+
+    new Shape(new Vector3(0, 0.5, 0), 0.4, new Vector3(0, 0, 0), cubeVAO, CUBE_TRIANGLES.length), // Center
+    new Shape(new Vector3(1, 0.05, 1), 0.05, new Vector3(0, 40, 0), cubeVAO, CUBE_TRIANGLES.length), // Center
+    new Shape(new Vector3(1, 0.1, -1), 0.1, new Vector3(0, 60, 0), cubeVAO, CUBE_TRIANGLES.length), // Center
+    new Shape(new Vector3(-1, 0.15, 1), 0.15, new Vector3(0, 60, 0), cubeVAO, CUBE_TRIANGLES.length), // Center
+    new Shape(new Vector3(-1, 0.2, -1), 0.2, new Vector3(0, 80, 0), cubeVAO, CUBE_TRIANGLES.length), // Center
   ];
 
   canvas.width = canvas.clientWidth * devicePixelRatio;
   canvas.height = canvas.clientHeight * devicePixelRatio;
 
-  const matView = mat4.create();
-  const matProj = mat4.create();
-  const matViewProj = mat4.create();
+  let matView = new Matrix4x4();
+  let matProj = new Matrix4x4();
+  let matViewProj = new Matrix4x4();
   let cameraAngle = 0;
 
   //render
@@ -105,43 +107,34 @@ export async function cube3d() {
 
     //
     // Update
-    cameraAngle += dt * glMatrix.toRadian(10);
+    cameraAngle += dt * (Math.PI / 180) * 10;
 
-    const cameraX = 3 * Math.sin(cameraAngle);
-    const cameraZ = 3 * Math.cos(cameraAngle);
+    let cameraX = 3 * Math.sin(cameraAngle);
+    let cameraZ = 3 * Math.cos(cameraAngle);
 
-    mat4.lookAt(
-      matView,
-      /* pos= */ vec3.fromValues(cameraX, 1, cameraZ),
-      /* lookAt= */ vec3.fromValues(0, 0, 0),
-      /* up= */ vec3.fromValues(0, 1, 0)
-    );
-    mat4.perspective(
-      matProj,
-      /* fovy= */ glMatrix.toRadian(80),
-      /* aspectRatio= */ canvas.width / canvas.height,
-      /* near, far= */ 0.1,
-      100.0
-    );
+    if (false) {
+      cameraX = 3;
+      cameraZ = 3;
+    }
+
+    matView = Matrix4x4.lookAt(new Vector3(cameraX, 3, cameraZ), new Vector3());
+    matProj = Matrix4x4.perspectiveProjectionMatrix(canvas.height, canvas.width, 80, 100, 0.1);
 
     // in GLM:    matViewProj = matProj * matView
-    mat4.multiply(matViewProj, matProj, matView);
+    // const temp = mat4.create();
+    // mat4.multiply(temp, matProj.values, matView.values);
+
+    matViewProj = Matrix4x4.multiply(matProj, matView);
 
     //
+
     // Render
-    canvas.width = canvas.clientWidth * devicePixelRatio;
-    canvas.height = canvas.clientHeight * devicePixelRatio;
 
     gl.clearColor(0.02, 0.02, 0.02, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.CULL_FACE);
-    gl.cullFace(gl.BACK);
-    gl.frontFace(gl.CCW);
-    gl.viewport(0, 0, canvas.width, canvas.height);
 
     gl.useProgram(cubeProgram);
-    gl.uniformMatrix4fv(matViewProjUniform, false, matViewProj);
+    gl.uniformMatrix4fv(matViewProjUniform, false, matViewProj.values);
 
     shapes.forEach((shape) => shape.draw(gl, matWorldUniform));
     requestAnimationFrame(updateFrame);
