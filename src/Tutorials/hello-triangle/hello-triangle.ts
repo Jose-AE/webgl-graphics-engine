@@ -1,4 +1,4 @@
-import { loadFile } from "../utils/loadFile";
+import { loadFile } from "../../utils/loadFile";
 
 export async function helloTriangle() {
   const canvas = document.querySelector("#glCanvas") as HTMLCanvasElement;
@@ -28,7 +28,9 @@ export async function helloTriangle() {
   //#endregion
 
   //#region VERTEX_SHADER
-  const vertexShaderCode = await loadFile("./Tutorial/hello-triangle.vert");
+  const vertexShaderCode = await loadFile(
+    "./Tutorials/hello-triangle/hello-triangle.vert"
+  );
 
   const vertexShader = gl.createShader(gl.VERTEX_SHADER); //create a vertex shader
   if (!vertexShader) throw new Error("Erorr creating vertex shader");
@@ -44,7 +46,9 @@ export async function helloTriangle() {
   //#endregion
 
   //#region FRAGMENT_SHADER
-  const fragmentShaderCode = await loadFile("./Tutorial/hello-triangle.frag");
+  const fragmentShaderCode = await loadFile(
+    "./Tutorials/hello-triangle/hello-triangle.frag"
+  );
 
   const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER); //create a vertex shader
   if (!fragmentShader) throw new Error("Erorr creating fragment shader");
