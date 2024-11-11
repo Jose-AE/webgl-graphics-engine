@@ -1,3 +1,4 @@
 import { GraphicsEngineExample2 } from "./examples/GraphicsEngineExample2";
+import { lightingExample1 } from "./examples/lighting1";
 
-GraphicsEngineExample2();
+lightingExample1();
