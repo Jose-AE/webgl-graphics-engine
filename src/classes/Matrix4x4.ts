@@ -142,12 +142,12 @@ export class Matrix4x4 {
   //get fov = 1/tan(theta/2)
   //normalize z values = ( zfar/ (zfar-znear) ) - (   (zfar/ zfar-znear ) * znear )
   //https://www.youtube.com/watch?v=EqNcqBdrNyI&ab_channel=pikuma
-  public static perspectiveProjectionMatrix(height: number, width: number, fov: number, zFar: number, zNear: number) {
+  public static perspectiveProjectionMatrix(aspectRatio: number, fov: number, zFar: number, zNear: number) {
     const fovRadians = (Math.PI / 180) * fov;
     const projectionMatrix = new Matrix4x4();
 
     // Aspect ratio calculation
-    projectionMatrix.values[0] = (1 / Math.tan(fovRadians / 2)) * (width / height);
+    projectionMatrix.values[0] = (1 / Math.tan(fovRadians / 2)) * aspectRatio;
     projectionMatrix.values[5] = 1 / Math.tan(fovRadians / 2);
 
     // Z-coordinate handling
@@ -164,8 +164,7 @@ export class Matrix4x4 {
   public static cameraMatrix(
     rotation: Vector3,
     translation: Vector3,
-    height: number,
-    width: number,
+    aspectRatio: number,
     fov: number,
     zFar: number,
     zNear: number
@@ -173,7 +172,7 @@ export class Matrix4x4 {
     let cameraViewMatrix = new Matrix4x4();
 
     const translationMatrix = Matrix4x4.fromRotationTranslationScaleMatrix(rotation, translation, new Vector3(1, 1, 1));
-    const projectionMatrix = Matrix4x4.perspectiveProjectionMatrix(height, width, fov, zFar, zNear);
+    const projectionMatrix = Matrix4x4.perspectiveProjectionMatrix(aspectRatio, fov, zFar, zNear);
 
     //   P * T * IDENTY
     cameraViewMatrix = Matrix4x4.multiply(translationMatrix, cameraViewMatrix);

@@ -118,7 +118,7 @@ export async function cube3d() {
     }
 
     matView = Matrix4x4.lookAt(new Vector3(cameraX, 3, cameraZ), new Vector3());
-    matProj = Matrix4x4.perspectiveProjectionMatrix(canvas.height, canvas.width, 80, 100, 0.1);
+    matProj = Matrix4x4.perspectiveProjectionMatrix(canvas.height / canvas.width, 80, 100, 0.1);
 
     // in GLM:    matViewProj = matProj * matView
     // const temp = mat4.create();
