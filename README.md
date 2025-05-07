@@ -2,7 +2,8 @@
 
 A proof-of-concept graphics engine built with WebGL 2 and TypeScript to understand the fundamentals of 3D graphics programming.
 
-![WebGL Graphics Engine](https://via.placeholder.com/800x400?text=WebGL+Graphics+Engine)
+![image](https://github.com/user-attachments/assets/9c2678ac-40af-4b12-bd6b-c741645b939d)
+
 
 ## Overview
 
